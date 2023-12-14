@@ -72,50 +72,49 @@ distribute_files() {
 
         FILE=$(echo "$line" | cut -d ';' -f 1)
         SOURCE=$(echo "$line" | cut -d ';' -f 2)
+        FILENAME="$(echo "$SOURCE" | rev | cut -d '/' -f 1 | rev)"
+        FILENAMEPATH="$(echo "$SOURCE" | rev | cut -d '/' -f 2- | rev)"
 
-        if [ -e "$SOURCE" ]; then
-            FILENAME="$(echo "$SOURCE" | rev | cut -d '/' -f 1 | rev)"
-            FILENAMEPATH="$(echo "$SOURCE" | rev | cut -d '/' -f 2- | rev)"
-            if [[ $FILE == 'f' ]]; then
-                if [[ ! -e "$FILENAMEPATH" ]]; then
-                    mkdir -p "$FILENAMEPATH"
-                fi
-                if [[ -e "$SOURCE" ]]; then
-                    cat "$DIR/data/$FILENAME" > "$SOURCE"
-                else
-                    cp "$DIR/data/$FILENAME" "$FILENAMEPATH/."
-                fi
-            else
-                #if [[ $REWRITE_DIR == 0 ]]; then
-                    #echo "You are about to rewrite a directory stored in $(pwd)/data"
-                    #echo "are you sure? (A sets it for all) [y/n/A] "
-                    #read -rp REWRITE
-                    #if [[ $REWRITE == 'A' ]]; then
-                    #    REWRITE_DIR=1
-                    #elif [[ ! $REWRITE == 'y' ]]; then
-                    #    continue
-                    #fi
-                #fi
-                echo "$FILENAME"
-                echo 
-                echo "--------------------------"
-
-                echo "$SOURCE"
-                echo "$FILENAMEPATH"
-                echo "$FILENAME"
-                echo "--------------------------"
-                echo 
-
-                #cd "$FILENAMEPATH"
-                if [[ ! -e "$FILENAMEPATH" ]]; then
-                    mkdir -p "$FILENAMEPATH"
-                fi
-
-                cp "$DIR/data/${FILENAME}_autosync_prec.zip" "$FILENAMEPATH/."
-                #zip -r "$DIR/data/${FILENAME}_autosync_prep" "$FILENAME" >&/dev/null
-                #cd "$DIR"
+        if [[ $FILE == 'f' ]]; then
+            echo "$FILENAMEPATH"
+            if [ ! -d "$FILENAMEPATH" ]; then
+                mkdir -p "$FILENAMEPATH"
             fi
-        else echo "File on line $i doesn't exist --skipping"
+            if [[ -e "$SOURCE" ]]; then
+                cat "$DIR/data/$FILENAME" > "$SOURCE"
+            else
+                cp "$DIR/data/$FILENAME" "$FILENAMEPATH/."
+            fi
+        else
+            #if [[ $REWRITE_DIR == 0 ]]; then
+                #echo "You are about to rewrite a directory stored in $(pwd)/data"
+                #echo "are you sure? (A sets it for all) [y/n/A] "
+                #read -rp REWRITE
+                #if [[ $REWRITE == 'A' ]]; then
+                #    REWRITE_DIR=1
+                #elif [[ ! $REWRITE == 'y' ]]; then
+                #    continue
+                #fi
+            #fi
+            echo "$FILENAME"
+            echo 
+            echo "--------------------------"
+
+            echo "$SOURCE"
+            echo "$FILENAMEPATH"
+            echo "$FILENAME"
+            echo "--------------------------"
+            echo 
+
+            #cd "$FILENAMEPATH"
+            echo "$FILENAMEPATH"
+            if [ ! -d "$FILENAMEPATH" ]; then
+                mkdir -p "$FILENAMEPATH"
+            fi
+
+            cp "$DIR/data/${FILENAME}_autosync_prep.zip" "$FILENAMEPATH/."
+            #zip -r "$DIR/data/${FILENAME}_autosync_prep" "$FILENAME" >&/dev/null
+            #cd "$DIR"
         fi
     done < "$sfile"
 
@@ -133,7 +132,7 @@ git_add() {
 
 DIR="/home/borec/fun/pcsync"
 #cd $DIR;
-if [ ! -e "$DIR/data/" ]; then
+if [ ! -d "$DIR/data/" ]; then
     mkdir "data"
 fi
 
