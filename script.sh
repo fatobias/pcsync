@@ -3,34 +3,60 @@
 # get a simple list of modified files
 # git status --porcelain | grep '^.*\ ' | cut -c 4-
 
+
+DATADIR="/home/borec/fun/pcsync/data"
+
 add_files()
 {
-    echo "bruha1"
     local sfile="$1"
-    echo "bruha2"
     if [ ! -e "$sfile" ]; then
-        echo "bruha3"
         echo "Files to sinc not found"
         return
     fi
-    echo "bruha4"
 
-    I=1
+    REWRITE_DIR=0
+
+    i=0
     while IFS= read -r line; do
+        i=$((i+1))
+
         FILE=$(echo "$line" | cut -d ';' -f 1)
         SOURCE=$(echo "$line" | cut -d ';' -f 2)
-        if [ -e "SOURCE" ]; then
-            if [ $FILE == 'f' ]; then
+
+        if [ -e "$SOURCE" ]; then
+            if [[ $FILE == 'f' ]]; then
                 echo "in file"
+                cp "$SOURCE" "./data/."
                 add_files "${SOURCE}"
             else
-                echo "in zip"
-                #echo "$(echo "$SOURCE" | rev | cut -d '/' -f 1 | rev)"
-                #echo "$SOURCE"
-                zip -r "$(echo "$SOURCE" | rev | cut -d '/' -f 1 | rev)" "$SOURCE"
-                #add_files "${SOURCE}.zip"
+                #if [[ $REWRITE_DIR == 0 ]]; then
+                    #echo "You are about to rewrite a directory stored in $(pwd)/data"
+                    #echo "are you sure? (A sets it for all) [y/n/A] "
+                    #read -rp REWRITE
+                    #if [[ $REWRITE == 'A' ]]; then
+                    #    REWRITE_DIR=1
+                    #elif [[ ! $REWRITE == 'y' ]]; then
+                    #    continue
+                    #fi
+                #fi
+                FILENAME="$(echo "$SOURCE" | rev | cut -d '/' -f 1 | rev)"
+                FILENAMEPATH="$(echo "$SOURCE" | rev | cut -d '/' -f 2- | rev)"
+                echo "$FILENAME"
+                echo 
+                echo "--------------------------"
+
+                echo "$SOURCE"
+                echo "$FILENAMEPATH"
+                echo "$FILENAME"
+                echo "--------------------------"
+                echo 
+
+                cd "$FILENAMEPATH"
+                zip -r "$DIR/data/${FILENAME}_autosync_prep" "$FILENAME"
+                cd "$DIR"
             fi
-        else echo "File on line $I doesn't exist \n --skipping"; fi
+        else echo "File on line $i doesn't exist --skipping"
+        fi
     done < "$sfile"
 }
 
@@ -44,19 +70,21 @@ git_add() {
     done
 }
 
-
-#DIR="/home/borec/fun/sync_test/pcsync"
+DIR="/home/borec/fun/pcsync"
 #cd $DIR;
 #mapfile -t modified_files < <(git status --porcelain | grep '^.* ' | cut -c 4-)
 
-echo "bruh"
-add_files "movement"
-echo "bruh"
+add_files "addresses"
+exit 1
 
 echo "push to main [y/n] "
 read -r PROCEED
 
-if [ ! $PROCEED == "y" ]; then echo "exiting"; exit 2; else echo "good luck then"; fi
+if [ ! $PROCEED == "y" ]; then
+    echo "exiting"
+    exit 2
+fi
+echo "good luck then"
 
 DATE=`date`
 git commit -m "$DATE"
