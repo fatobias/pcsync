@@ -24,7 +24,7 @@ add_files()
         if [ -e "$SOURCE" ]; then
             if [[ $FILE == 'f' ]]; then
                 if [[ -e "$DIR/data/$FILE" ]]; then
-                    cat "$SOURCE" >> "$DIR/data/$FILE"
+                    cat "$SOURCE" > "$DIR/data/$FILE"
                 else
                     cp "$SOURCE" "./data/."
                 fi
@@ -76,11 +76,16 @@ distribute_files() {
         SOURCE=$(echo "$line" | cut -d ';' -f 2)
 
         if [ -e "$SOURCE" ]; then
+            FILENAME="$(echo "$SOURCE" | rev | cut -d '/' -f 1 | rev)"
+            FILENAMEPATH="$(echo "$SOURCE" | rev | cut -d '/' -f 2- | rev)"
             if [[ $FILE == 'f' ]]; then
-                if [[ -e "$DIR/data/$FILE" ]]; then
-                    cat "$DIR/data/$FILE" >> "$SOURCE"
+                if [[ ! -e "$FILENAMEPATH" ]]; then
+                    mkdir -p "$FILENAMEPATH"
+                fi
+                if [[ -e "$SOURCE" ]]; then
+                    cat "$DIR/data/$FILE" > "$SOURCE"
                 else
-                    cp "$SOURCE" "./data/."
+                    cp "./data/$FILENAME" "$FILENAMEPATH/."
                 fi
             else
                 #if [[ $REWRITE_DIR == 0 ]]; then
@@ -93,8 +98,6 @@ distribute_files() {
                     #    continue
                     #fi
                 #fi
-                FILENAME="$(echo "$SOURCE" | rev | cut -d '/' -f 1 | rev)"
-                FILENAMEPATH="$(echo "$SOURCE" | rev | cut -d '/' -f 2- | rev)"
                 echo "$FILENAME"
                 echo 
                 echo "--------------------------"
@@ -105,9 +108,14 @@ distribute_files() {
                 echo "--------------------------"
                 echo 
 
-                cd "$FILENAMEPATH"
-                zip -r "$DIR/data/${FILENAME}_autosync_prep" "$FILENAME" >&/dev/null
-                cd "$DIR"
+                #cd "$FILENAMEPATH"
+                if [[ ! -e "$FILENAMEPATH" ]]; then
+                    mkdir -p "$FILENAMEPATH"
+                fi
+
+                cp "$DIR/data/${FILENAME}_autosync_prec.zip" "$FILENAMEPATH/."
+                #zip -r "$DIR/data/${FILENAME}_autosync_prep" "$FILENAME" >&/dev/null
+                #cd "$DIR"
             fi
         else echo "File on line $i doesn't exist --skipping"
         fi
@@ -134,6 +142,8 @@ fi
 if [ "$1" == "push" ]; then
     add_files "addresses"
 
+    git add "addresses"
+
     #mapfile -t modified_files < <(git status --porcelain | grep '^.* ' | cut -c 4-)
 
     echo "push to main [y/n] "
@@ -151,5 +161,6 @@ if [ "$1" == "push" ]; then
 
 elif [ "$1" == "pull" ]; then
     git pull
+    distribute_files "addresses"
 fi
 
