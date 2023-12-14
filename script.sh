@@ -25,9 +25,10 @@ add_files()
 
         if [ -e "$SOURCE" ]; then
             if [[ $FILE == 'f' ]]; then
-                echo "in file"
-                cp "$SOURCE" "./data/."
-                add_files "${SOURCE}"
+                if [[ -e "$DIR/data/$FILE" ]]; then
+                    cat "$SOURCE" >> "$DIR/data/$FILE"
+                else
+                    cp "$SOURCE" "./data/."
             else
                 #if [[ $REWRITE_DIR == 0 ]]; then
                     #echo "You are about to rewrite a directory stored in $(pwd)/data"
