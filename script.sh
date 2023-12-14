@@ -72,20 +72,29 @@ git_add() {
 
 DIR="/home/borec/fun/pcsync"
 #cd $DIR;
-#mapfile -t modified_files < <(git status --porcelain | grep '^.* ' | cut -c 4-)
-
-add_files "addresses"
-exit 1
-
-echo "push to main [y/n] "
-read -r PROCEED
-
-if [ ! $PROCEED == "y" ]; then
-    echo "exiting"
-    exit 2
+if [ ! -e "$DIR/data/" ]; then
+    mkdir "data"
 fi
-echo "good luck then"
 
-DATE=`date`
-git commit -m "$DATE"
-git push
+if [ "$1" == "push" ]; then
+    add_files "addresses"
+
+    #mapfile -t modified_files < <(git status --porcelain | grep '^.* ' | cut -c 4-)
+
+    echo "push to main [y/n] "
+    read -r PROCEED
+
+    if [ ! $PROCEED == "y" ]; then
+        echo "exiting"
+        exit 2
+    fi
+    echo "good luck then"
+    git add data/
+    DATE=`date`
+    git commit -m "$DATE"
+    git push
+
+elif [ "$1" == "pull" ]; then
+    git pull
+fi
+
