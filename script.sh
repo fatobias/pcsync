@@ -10,11 +10,9 @@ add_files()
 {
     local sfile="$1"
     if [ ! -e "$sfile" ]; then
-        echo "Files to sinc not found"
-        return
+        echo "list of files to sinc not found"
+        exit 2
     fi
-
-    REWRITE_DIR=0
 
     i=0
     while IFS= read -r line; do
@@ -29,6 +27,7 @@ add_files()
                     cat "$SOURCE" >> "$DIR/data/$FILE"
                 else
                     cp "$SOURCE" "./data/."
+                fi
             else
                 #if [[ $REWRITE_DIR == 0 ]]; then
                     #echo "You are about to rewrite a directory stored in $(pwd)/data"
@@ -53,12 +52,67 @@ add_files()
                 echo 
 
                 cd "$FILENAMEPATH"
-                zip -r "$DIR/data/${FILENAME}_autosync_prep" "$FILENAME"
+                zip -r "$DIR/data/${FILENAME}_autosync_prep" "$FILENAME" >&/dev/null
                 cd "$DIR"
             fi
         else echo "File on line $i doesn't exist --skipping"
         fi
     done < "$sfile"
+}
+
+distribute_files() {
+    while IFS= read -r line; do
+    local sfile="$1"
+    if [ ! -e "$sfile" ]; then
+        echo "list of files to sinc not found"
+        exit 2
+    fi
+
+    i=0
+    while IFS= read -r line; do
+        i=$((i+1))
+
+        FILE=$(echo "$line" | cut -d ';' -f 1)
+        SOURCE=$(echo "$line" | cut -d ';' -f 2)
+
+        if [ -e "$SOURCE" ]; then
+            if [[ $FILE == 'f' ]]; then
+                if [[ -e "$DIR/data/$FILE" ]]; then
+                    cat "$DIR/data/$FILE" >> "$SOURCE"
+                else
+                    cp "$SOURCE" "./data/."
+                fi
+            else
+                #if [[ $REWRITE_DIR == 0 ]]; then
+                    #echo "You are about to rewrite a directory stored in $(pwd)/data"
+                    #echo "are you sure? (A sets it for all) [y/n/A] "
+                    #read -rp REWRITE
+                    #if [[ $REWRITE == 'A' ]]; then
+                    #    REWRITE_DIR=1
+                    #elif [[ ! $REWRITE == 'y' ]]; then
+                    #    continue
+                    #fi
+                #fi
+                FILENAME="$(echo "$SOURCE" | rev | cut -d '/' -f 1 | rev)"
+                FILENAMEPATH="$(echo "$SOURCE" | rev | cut -d '/' -f 2- | rev)"
+                echo "$FILENAME"
+                echo 
+                echo "--------------------------"
+
+                echo "$SOURCE"
+                echo "$FILENAMEPATH"
+                echo "$FILENAME"
+                echo "--------------------------"
+                echo 
+
+                cd "$FILENAMEPATH"
+                zip -r "$DIR/data/${FILENAME}_autosync_prep" "$FILENAME" >&/dev/null
+                cd "$DIR"
+            fi
+        else echo "File on line $i doesn't exist --skipping"
+        fi
+    done < "$sfile"
+
 }
 
 # adding new and modified files
