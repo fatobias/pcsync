@@ -61,13 +61,11 @@ add_files()
 }
 
 distribute_files() {
-    while IFS= read -r line; do
     local sfile="$1"
     if [ ! -e "$sfile" ]; then
         echo "list of files to sinc not found"
         exit 2
     fi
-
     i=0
     while IFS= read -r line; do
         i=$((i+1))
@@ -83,9 +81,9 @@ distribute_files() {
                     mkdir -p "$FILENAMEPATH"
                 fi
                 if [[ -e "$SOURCE" ]]; then
-                    cat "$DIR/data/$FILE" > "$SOURCE"
+                    cat "$DIR/data/$FILENAME" > "$SOURCE"
                 else
-                    cp "./data/$FILENAME" "$FILENAMEPATH/."
+                    cp "$DIR/data/$FILENAME" "$FILENAMEPATH/."
                 fi
             else
                 #if [[ $REWRITE_DIR == 0 ]]; then
