@@ -29,27 +29,13 @@ add_files()
                     cp "$SOURCE" "./data/."
                 fi
             else
-                #if [[ $REWRITE_DIR == 0 ]]; then
-                    #echo "You are about to rewrite a directory stored in $(pwd)/data"
-                    #echo "are you sure? (A sets it for all) [y/n/A] "
-                    #read -rp REWRITE
-                    #if [[ $REWRITE == 'A' ]]; then
-                    #    REWRITE_DIR=1
-                    #elif [[ ! $REWRITE == 'y' ]]; then
-                    #    continue
-                    #fi
-                #fi
                 FILENAME="$(echo "$SOURCE" | rev | cut -d '/' -f 1 | rev)"
                 FILENAMEPATH="$(echo "$SOURCE" | rev | cut -d '/' -f 2- | rev)"
-                echo "$FILENAME"
-                echo 
                 echo "--------------------------"
-
                 echo "$SOURCE"
                 echo "$FILENAMEPATH"
                 echo "$FILENAME"
                 echo "--------------------------"
-                echo 
 
                 cd "$FILENAMEPATH"
                 zip -r "$DIR/data/${FILENAME}_autosync_prep" "$FILENAME" >&/dev/null
@@ -86,35 +72,36 @@ distribute_files() {
                 cp "$DIR/data/$FILENAME" "$FILENAMEPATH/."
             fi
         else
-            #if [[ $REWRITE_DIR == 0 ]]; then
-                #echo "You are about to rewrite a directory stored in $(pwd)/data"
-                #echo "are you sure? (A sets it for all) [y/n/A] "
-                #read -rp REWRITE
-                #if [[ $REWRITE == 'A' ]]; then
-                #    REWRITE_DIR=1
-                #elif [[ ! $REWRITE == 'y' ]]; then
-                #    continue
-                #fi
-            #fi
-            echo "$FILENAME"
-            echo 
             echo "--------------------------"
-
             echo "$SOURCE"
             echo "$FILENAMEPATH"
             echo "$FILENAME"
             echo "--------------------------"
-            echo 
 
-            #cd "$FILENAMEPATH"
             echo "$FILENAMEPATH"
             if [ ! -d "$FILENAMEPATH" ]; then
                 mkdir -p "$FILENAMEPATH"
             fi
 
-            cp "$DIR/data/${FILENAME}_autosync_prep.zip" "$FILENAMEPATH/."
-            #zip -r "$DIR/data/${FILENAME}_autosync_prep" "$FILENAME" >&/dev/null
-            #cd "$DIR"
+            echo "$DIR/data/${FILENAME}_autosync_prep.zip"
+            echo "$FILENAMEPATH/."
+            #echo "failed cp --skipping"; continue
+            cp "$DIR/data/${FILENAME}_autosync_prep.zip" "$FILENAMEPATH/." || `echo "failed cp --skipping"; continue`
+
+            length=${#FILENAMEPATH}
+
+            if [ $length -lt 20 ]; then echo "Nice try asshole"; exit 2; fi
+
+            if [ -d "${FILENAMEPATH}/${FILENAME}" ]; then
+                if [ -d "${FILENAMEPATH}/${FILENAME}_old" ]; then
+                    rm -rf "${FILENAMEPATH}/${FILENAME}_old"
+                fi
+                mv "${FILENAMEPATH}/${FILENAME}" "${FILENAMEPATH}/${FILENAME}_old"
+            fi
+            cd "${FILENAMEPATH}"
+            unzip "${FILENAMEPATH}/${FILENAME}_autosync_prep"
+            cd "${DIR}"
+            rm "${FILENAMEPATH}/${FILENAME}_autosync_prep.zip"
         fi
     done < "$sfile"
 
