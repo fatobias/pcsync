@@ -148,3 +148,13 @@ elif [ "$1" == "pull" ]; then
     distribute_files "addresses"
 fi
 
+
+# this doesn't work well, probably won't fix it, duplicate storage of files is not a bad idea
+# echo "do you wish to delete $DIR/data? [y/N]"
+# read -r PROCEED
+# if [ $PROCEED == "y" ]; then
+#    echo deleting
+#    cd "$DIR/data"
+#    rm *
+#    cd "$DIR"
+# fi
