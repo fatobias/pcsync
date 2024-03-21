@@ -1,6 +1,3 @@
-#f;/home/.../[filename]
-#d;/home/.../[foldername]
-
 f;/home/borec/.config/i3/config
 d;/home/borec/.config/nvim/lua/user
 f;/home/borec/.bashrc
